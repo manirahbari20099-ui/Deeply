@@ -6,6 +6,7 @@
 <title>Deeply | شعرهای وینا محمودی</title>
 <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   
@@ -39,7 +40,6 @@
     background: transparent;
   }
 
-  /* لوگوی سایت (Deeply) */
   .site-brand {
     font-family: 'Vazirmatn', sans-serif;
     font-size: 1.2rem;
@@ -287,8 +287,6 @@
   <div class="poem-card">
     
     <div class="poem-header">
-      
-      <!-- اسم سایت -->
       <div class="site-brand">Deeply</div>
 
       <div class="category-tabs">
@@ -296,10 +294,7 @@
         <button class="tab-btn" onclick="switchCategory('sad', this)">غمگین</button>
       </div>
 
-      <!-- لیست دکمه های انتخاب شعر -->
-      <div class="poem-list-container" id="poemListContainer">
-        <!-- دکمه ها اینجا با جاوااسکریپت ساخته میشن -->
-      </div>
+      <div class="poem-list-container" id="poemListContainer"></div>
 
       <div class="top-mark"><span>❖</span></div>
       <h1 class="poem-title" id="poemTitle">...</h1>
@@ -309,9 +304,7 @@
     </div>
 
     <div class="poem-body-wrapper" id="scrollArea">
-      <div class="poem-body" id="poemText">
-        <!-- محتوای شعر اینجا لود میشه -->
-      </div>
+      <div class="poem-body" id="poemText"></div>
     </div>
 
     <div class="footer-actions">
@@ -324,7 +317,6 @@
 
   </div>
 
-  <!-- مودال قوانین -->
   <div id="copyrightModal" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-title">حقوق نشر و قوانین</div>
@@ -414,7 +406,6 @@
       currentPoemId = poem.title;
 
       document.getElementById('poemTitle').innerText = poem.title;
-      // ما اسم شاعر رو به صورت ثابت (وینا محمودی) توی HTML گذاشتیم، پس نیازی به تغییرش نیست
 
       poemText.innerHTML = '';
       poem.verses.forEach((verseString, idx) => {
@@ -552,6 +543,13 @@
 
     window.addEventListener('load', () => {
       fetchAndPopulate('romantic.json');
+      
+      // ثبت Service Worker برای آفلاین شدن
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+          .then(registration => console.log('ServiceWorker registered!'))
+          .catch(err => console.log('ServiceWorker registration failed: ', err));
+      }
     });
 
     // مودال
@@ -565,4 +563,4 @@
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('active')) { modal.classList.remove('active'); } });
   </script>
 </body>
-  </html>
+</html>
