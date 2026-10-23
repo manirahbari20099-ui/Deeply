@@ -1,0 +1,15 @@
+{
+  "name": "Deeply - شعرهای وینا محمودی",
+  "short_name": "Deeply",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a140d",
+  "theme_color": "#122418",
+  "icons": [
+    {
+      "src": "https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/misc/Farsi-Digits/Vazirmatn-FD-Regular.woff2",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
