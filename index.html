@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deeply | شعرهای وینا محمودی</title>
+<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  
+  body {
+    background: #0a140d; 
+    background-image: radial-gradient(circle at 50% 50%, #122418 0%, #050a06 100%);
+    font-family: 'Vazirmatn', Tahoma, sans-serif;
+    height: 100vh; height: 100dvh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 1.5rem; overflow: hidden;
+  }
+
+  .poem-card {
+    max-width: 620px; width: 100%;
+    max-height: 90vh; max-height: 90dvh;
+    background: rgba(18, 14, 11, 0.95); 
+    border: 1px solid rgba(181, 149, 97, 0.4); 
+    border-radius: 16px;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.9),
+                inset 0 0 20px rgba(181, 149, 97, 0.05);
+    display: flex; flex-direction: column;
+    position: relative; overflow: hidden;
+  }
+
+  .poem-header {
+    padding: 2rem 2rem 1rem 2rem;
+    flex-shrink: 0;
+    position: relative;
+    display: flex; flex-direction: column;
+    z-index: 10;
+    background: transparent;
+  }
+
+  /* لوگوی سایت (Deeply) */
+  .site-brand {
+    font-family: 'Vazirmatn', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-align: center;
+    color: #b59561;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 0 10px rgba(181, 149, 97, 0.3);
+  }
+
+  .poem-list-container {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+    overflow-x: auto; 
+    padding-bottom: 5px;
+    scrollbar-width: none;
+  }
+  .poem-list-container::-webkit-scrollbar { display: none; }
+  
+  .poem-list-btn {
+    background: rgba(181, 149, 97, 0.05);
+    border: 1px solid rgba(181, 149, 97, 0.2);
+    color: #8a7a63;
+    padding: 0.4rem 1rem;
+    border-radius: 8px;
+    font-family: 'Vazirmatn', sans-serif;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap; 
+  }
+  .poem-list-btn:hover { color: #b59561; }
+  .poem-list-btn.active {
+    background: rgba(181, 149, 97, 0.2);
+    border-color: #b59561;
+    color: #f2ebd9;
+    font-weight: bold;
+  }
+
+  .category-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 1rem;
+  }
+  .tab-btn {
+    background: none;
+    border: 1px solid rgba(181, 149, 97, 0.2);
+    color: #8a7a63;
+    padding: 0.4rem 1.2rem;
+    border-radius: 20px;
+    font-family: 'Vazirmatn', sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .tab-btn:hover { color: #b59561; }
+  .tab-btn.active {
+    background: rgba(181, 149, 97, 0.15);
+    border-color: #b59561;
+    color: #f2ebd9;
+    box-shadow: 0 0 15px rgba(181, 149, 97, 0.1);
+  }
+
+  .top-mark {
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 1rem; color: #b59561;
+  }
+  .top-mark::before, .top-mark::after {
+    content:''; flex-grow: 1; height: 1px;
+    background: linear-gradient(90deg, transparent, #b59561); opacity: 0.6;
+  }
+  .top-mark::after { background: linear-gradient(90deg, #b59561, transparent); }
+  .top-mark span { font-size: 1.1rem; padding: 0 15px; line-height: 1; }
+
+  .poem-title {
+    font-family: 'Amiri', serif; font-size: 2.1rem; font-weight: 700;
+    text-align: center; color: #f2ebd9; 
+    margin-bottom: 0.4rem;
+  }
+  .poem-author {
+    text-align: center; color: #b59561; 
+    font-size: 0.95rem;
+  }
+
+  .goto-bookmark-btn {
+    display: none; 
+    margin: 1.2rem auto 0;
+    background: rgba(181, 149, 97, 0.1);
+    border: 1px solid rgba(181, 149, 97, 0.5);
+    color: #b59561;
+    padding: 0.5rem 1.2rem; border-radius: 20px;
+    font-family: 'Vazirmatn', sans-serif; font-size: 0.85rem;
+    cursor: pointer; transition: all 0.3s ease;
+    animation: pulse 2s infinite;
+  }
+  .goto-bookmark-btn:hover { background: rgba(181, 149, 97, 0.2); color: #fff; }
+  
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(181, 149, 97, 0.4); }
+    70% { box-shadow: 0 0 0 6px rgba(181, 149, 97, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(181, 149, 97, 0); }
+  }
+
+  .poem-body-wrapper {
+    flex-grow: 1; overflow-y: auto;
+    padding: 1rem 2.6rem 4rem 2.6rem;
+    scrollbar-width: none; -ms-overflow-style: none;
+    position: relative;
+  }
+  .poem-body-wrapper::-webkit-scrollbar { display: none; }
+
+  .poem-body {
+    font-family: 'Amiri', serif; 
+    font-size: 1.3rem; 
+    color: #e8dfcc; 
+  }
+
+  .poem-couplet {
+    display: flex;
+    justify-content: center; 
+    gap: 2rem; 
+    align-items: baseline;
+    padding: 0.8rem 0; 
+    transition: background 0.3s ease;
+    border-radius: 8px;
+    position: relative;
+  }
+
+  .hemistich { white-space: nowrap; }
+
+  .verse-number {
+    position: absolute;
+    right: 0; top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Vazirmatn', sans-serif;
+    font-size: 0.75rem;
+    color: rgba(181, 149, 97, 0.4);
+    transition: color 0.3s ease;
+  }
+
+  .poem-couplet.bookmarked .verse-number { color: #b59561; }
+  .poem-couplet.highlight { background: rgba(181, 149, 97, 0.15); }
+
+  .poem-couplet.bookmarked::after {
+    content: '❖';
+    position: absolute; right: -1.2rem; top: 50%;
+    transform: translateY(-50%);
+    color: #b59561; font-size: 1rem;
+  }
+
+  .footer-actions {
+    padding: 1.2rem 2rem 1.5rem 2rem;
+    border-top: 1px solid rgba(181, 149, 97, 0.15);
+    flex-shrink: 0; background: rgba(18, 14, 11, 0.95);
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 10px;
+  }
+  
+  .verse-counter {
+    font-family: 'Vazirmatn', sans-serif; font-size: 0.8rem; color: #b59561;
+    background: rgba(181, 149, 97, 0.05);
+    padding: 0.5rem 1rem; border-radius: 12px;
+    border: 1px solid rgba(181, 149, 97, 0.2);
+    white-space: nowrap; display: flex; align-items: center; gap: 5px;
+  }
+  .verse-counter span { color: #f2ebd9; font-weight: 700; font-size: 0.9rem; }
+
+  .footer-btn {
+    background: none;
+    border: 1px solid rgba(181, 149, 97, 0.3);
+    color: #b59561; padding: 0.6rem 1rem; border-radius: 20px;
+    font-family: 'Vazirmatn', sans-serif; font-size: 0.8rem;
+    cursor: pointer; transition: all 0.3s ease;
+    display: flex; align-items: center; gap: 0.4rem; white-space: nowrap;
+  }
+  .footer-btn:hover {
+    color: #f2ebd9; border-color: rgba(181, 149, 97, 0.6);
+    background: rgba(181, 149, 97, 0.1);
+  }
+  .footer-btn.btn-bookmark.active {
+    color: #f2ebd9; border-color: rgba(181, 149, 97, 0.8);
+    background: rgba(181, 149, 97, 0.2);
+  }
+
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; visibility: hidden; transition: all 0.3s ease;
+    z-index: 1000; padding: 1.5rem;
+  }
+  .modal-overlay.active { opacity: 1; visibility: visible; }
+  .modal-content {
+    background: #14110e; border: 1px solid rgba(181, 149, 97, 0.3);
+    border-radius: 16px; max-width: 480px; width: 100%;
+    padding: 2.5rem 2rem; transform: translateY(20px); transition: transform 0.3s ease;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+  }
+  .modal-overlay.active .modal-content { transform: translateY(0); }
+  .modal-title {
+    font-family: 'Amiri', serif; font-size: 1.5rem; color: #f2ebd9;
+    text-align: center; margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(181, 149, 97, 0.2); padding-bottom: 1rem;
+  }
+  .modal-text { font-size: 0.95rem; color: #c4b8a3; line-height: 1.8; text-align: justify; margin-bottom: 1.5rem; }
+  .modal-info {
+    background: rgba(181, 149, 97, 0.05); border: 1px solid rgba(181, 149, 97, 0.1);
+    border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;
+  }
+  .modal-info p { font-size: 0.85rem; color: #b59561; margin-bottom: 0.5rem; display: flex; justify-content: space-between; }
+  .modal-info p:last-child { margin-bottom: 0; }
+  .modal-info span { color: #f2ebd9; font-weight: 500; }
+  .btn-close {
+    display: block; width: 100%; background: #b59561; color: #14110e;
+    border: none; padding: 0.8rem; border-radius: 8px;
+    font-family: 'Vazirmatn', sans-serif; font-size: 0.95rem; font-weight: 600;
+    cursor: pointer; transition: background 0.2s ease;
+  }
+  .btn-close:hover { background: #d4b57c; }
+
+  @media (max-width: 520px) {
+    .poem-header { padding: 1.5rem 1rem 1rem 1rem; }
+    .poem-body-wrapper { padding: 1rem 1.5rem 4rem 1.5rem; }
+    .footer-actions { padding: 1rem 1rem 1.5rem 1rem; gap: 5px; }
+    .poem-title { font-size: 1.7rem; }
+    .poem-body { font-size: 1.1rem; }
+    .poem-couplet { flex-direction: column; gap: 0.2rem; align-items: center; padding: 0.8rem 0; }
+    .hemistich { white-space: normal; text-align: center; }
+    .verse-number { top: 0.5rem; right: 0; transform: none; font-size: 0.65rem; }
+    .modal-content { padding: 2rem 1.5rem; }
+    .poem-couplet.bookmarked::after { right: -0.5rem; font-size: 0.8rem; }
+    .footer-btn { font-size: 0.7rem; padding: 0.5rem 0.6rem; }
+    .verse-counter { font-size: 0.7rem; padding: 0.4rem 0.6rem; }
+    .verse-counter span { font-size: 0.8rem; }
+    .site-brand { font-size: 1rem; margin-bottom: 1rem; }
+  }
+</style>
+</head>
+<body>
+  <div class="poem-card">
+    
+    <div class="poem-header">
+      
+      <!-- اسم سایت -->
+      <div class="site-brand">Deeply</div>
+
+      <div class="category-tabs">
+        <button class="tab-btn active" onclick="switchCategory('romantic', this)">عاشقانه</button>
+        <button class="tab-btn" onclick="switchCategory('sad', this)">غمگین</button>
+      </div>
+
+      <!-- لیست دکمه های انتخاب شعر -->
+      <div class="poem-list-container" id="poemListContainer">
+        <!-- دکمه ها اینجا با جاوااسکریپت ساخته میشن -->
+      </div>
+
+      <div class="top-mark"><span>❖</span></div>
+      <h1 class="poem-title" id="poemTitle">...</h1>
+      <div class="poem-author" id="poemAuthor">وینا محمودی</div>
+      
+      <button id="gotoBookmarkBtn" class="goto-bookmark-btn">رفتن به نشانه‌ی شما</button>
+    </div>
+
+    <div class="poem-body-wrapper" id="scrollArea">
+      <div class="poem-body" id="poemText">
+        <!-- محتوای شعر اینجا لود میشه -->
+      </div>
+    </div>
+
+    <div class="footer-actions">
+      <button id="bookmarkBtn" class="footer-btn btn-bookmark">🔖 نشانه‌</button>
+      <div class="verse-counter">
+        بیت <span id="currentVerseNum">۱</span> از <span id="totalVersesNum">۰</span>
+      </div>
+      <button id="openModalBtn" class="footer-btn">قوانین</button>
+    </div>
+
+  </div>
+
+  <!-- مودال قوانین -->
+  <div id="copyrightModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-title">حقوق نشر و قوانین</div>
+      <div class="modal-text">
+        تمامی حقوق مادی و معنوی این اثر متعلق به پدیدآورنده و ناشر آن می‌باشد. هرگونه کپی‌برداری، بازنشر، تکثیر یا استفاده از محتوای این صفحه بدون کسب اجازهٔ کتبی، ممنوع بوده و پیگرد قانونی به دنبال خواهد داشت.
+      </div>
+      <div class="modal-info">
+        <p>شاعر / نویسنده: <span>وینا محمودی</span></p>
+        <p>ناشر: <span>وینا محمودی</span></p>
+        <p>سال انتشار: <span>۱۴۰۵</span></p>
+        <p>طراحی و توسعه: <span>مانی رهبری</span></p>
+      </div>
+      <button id="closeModalBtn" class="btn-close">متوجه شدم و می‌بندم</button>
+    </div>
+  </div>
+
+  <script>
+    const scrollArea = document.getElementById('scrollArea');
+    const bookmarkBtn = document.getElementById('bookmarkBtn');
+    const gotoBookmarkBtn = document.getElementById('gotoBookmarkBtn');
+    const poemText = document.getElementById('poemText');
+    const poemListContainer = document.getElementById('poemListContainer');
+    
+    let allCouplets = []; 
+    let currentCategory = 'romantic'; 
+    let currentPoemsData = []; 
+    let currentPoemId = ""; 
+
+    const toPersianNum = (num) => {
+      const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+      return num.toString().replace(/\d/g, x => persianDigits[x]);
+    };
+
+    const getStorageKey = () => `poem_bookmark_${currentCategory}_${currentPoemId}`;
+
+    window.switchCategory = function(category, btnElement) {
+      currentCategory = category;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      btnElement.classList.add('active');
+
+      const fileName = category === 'romantic' ? 'romantic.json' : 'sad.json';
+      fetchAndPopulate(fileName);
+    };
+
+    async function fetchAndPopulate(fileName) {
+      poemListContainer.innerHTML = '<span style="color: #b59561; font-size: 0.8rem;">در حال بارگذاری...</span>';
+      poemText.innerHTML = '<div style="color: #b59561; text-align: center; margin-top: 2rem;">لطفا صبر کنید...</div>';
+      
+      try {
+        const response = await fetch(fileName);
+        if (!response.ok) throw new Error('فایل پیدا نشد');
+        
+        currentPoemsData = await response.json();
+        
+        poemListContainer.innerHTML = '';
+        currentPoemsData.forEach((poem, index) => {
+          const btn = document.createElement('button');
+          btn.className = 'poem-list-btn';
+          btn.innerText = poem.title;
+          btn.onclick = function() { loadPoem(index, this); };
+          poemListContainer.appendChild(btn);
+        });
+
+        if(currentPoemsData.length > 0) {
+          const firstBtn = poemListContainer.querySelector('.poem-list-btn');
+          firstBtn.classList.add('active');
+          loadPoem(0, firstBtn);
+        }
+
+      } catch (error) {
+        console.error('خطا:', error);
+        poemText.innerHTML = `<div style="color: #ff5555; text-align: center; margin-top: 2rem; font-family: sans-serif;">
+          خطا در بارگذاری فایل ${fileName}.<br><br>
+          <small>توجه: فایل JSON باید کنار فایل HTML باشد و روی سرور اجرا شود.</small>
+        </div>`;
+        poemListContainer.innerHTML = '<span style="color: #ff5555; font-size: 0.8rem;">خطا در بارگذاری</span>';
+      }
+    }
+
+    window.loadPoem = function(index, btnElement) {
+      if(!currentPoemsData[index]) return;
+
+      document.querySelectorAll('.poem-list-btn').forEach(btn => btn.classList.remove('active'));
+      btnElement.classList.add('active');
+
+      const poem = currentPoemsData[index];
+      currentPoemId = poem.title;
+
+      document.getElementById('poemTitle').innerText = poem.title;
+      // ما اسم شاعر رو به صورت ثابت (وینا محمودی) توی HTML گذاشتیم، پس نیازی به تغییرش نیست
+
+      poemText.innerHTML = '';
+      poem.verses.forEach((verseString, idx) => {
+        const parts = verseString.split('|');
+        const rightHemistich = parts[0] ? parts[0].trim() : '';
+        const leftHemistich = parts[1] ? parts[1].trim() : '';
+
+        const coupletDiv = document.createElement('div');
+        coupletDiv.className = 'poem-couplet';
+        
+        coupletDiv.innerHTML = `
+          <span class="verse-number">${toPersianNum(idx + 1)}</span>
+          <span class="hemistich">${rightHemistich}</span>
+          <span class="hemistich">${leftHemistich}</span>
+        `;
+        poemText.appendChild(coupletDiv);
+      });
+
+      scrollArea.scrollTop = 0;
+      initElements();
+      initBookmark();
+    };
+
+    function initElements() {
+      allCouplets = Array.from(document.querySelectorAll('.poem-couplet'));
+      document.getElementById('totalVersesNum').innerText = toPersianNum(allCouplets.length);
+      document.getElementById('currentVerseNum').innerText = '۱';
+    }
+
+    function getCurrentVerseIndex() {
+      if(allCouplets.length === 0) return 0;
+      
+      if (scrollArea.scrollTop + scrollArea.clientHeight >= scrollArea.scrollHeight - 10) {
+        return allCouplets.length - 1;
+      }
+
+      const wrapperRect = scrollArea.getBoundingClientRect();
+      const centerY = wrapperRect.top + (wrapperRect.height / 2);
+      
+      let closestCouplet = allCouplets[0];
+      let minDistance = Infinity;
+
+      for (let i = 0; i < allCouplets.length; i++) {
+        const rect = allCouplets[i].getBoundingClientRect();
+        const coupletCenter = rect.top + (rect.height / 2);
+        const distance = Math.abs(centerY - coupletCenter);
+        
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestCouplet = allCouplets[i];
+        }
+      }
+      return allCouplets.indexOf(closestCouplet);
+    }
+
+    function checkGotoBtnVisibility() {
+      const savedIndex = localStorage.getItem(getStorageKey());
+      if (savedIndex !== null && allCouplets[savedIndex]) {
+        gotoBookmarkBtn.style.display = 'block';
+      } else {
+        gotoBookmarkBtn.style.display = 'none';
+      }
+    }
+
+    function updateVerseCounter() {
+      if(allCouplets.length === 0) return;
+      
+      const lineIndex = getCurrentVerseIndex();
+      if (lineIndex !== -1) {
+        document.getElementById('currentVerseNum').innerText = toPersianNum(lineIndex + 1);
+      }
+      
+      checkGotoBtnVisibility();
+    }
+
+    function initBookmark() {
+      const savedIndex = localStorage.getItem(getStorageKey());
+      if (savedIndex !== null) {
+        const index = parseInt(savedIndex, 10);
+        if (allCouplets[index]) {
+          allCouplets[index].classList.add('bookmarked');
+        }
+      }
+      updateVerseCounter();
+    }
+
+    let scrollTimeout;
+    scrollArea.addEventListener('scroll', () => {
+      updateVerseCounter();
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {}, 100);
+    });
+
+    bookmarkBtn.addEventListener('click', () => {
+      if(allCouplets.length === 0) return;
+
+      const currentLineIndex = getCurrentVerseIndex();
+      const lineElement = allCouplets[currentLineIndex];
+      const verseNum = toPersianNum(currentLineIndex + 1);
+
+      allCouplets.forEach(l => l.classList.remove('bookmarked'));
+      lineElement.classList.add('bookmarked');
+      
+      localStorage.setItem(getStorageKey(), currentLineIndex);
+      
+      checkGotoBtnVisibility();
+      
+      bookmarkBtn.classList.add('active');
+      bookmarkBtn.innerText = `✓ بیت ${verseNum} ذخیره شد`;
+      setTimeout(() => {
+        bookmarkBtn.classList.remove('active');
+        bookmarkBtn.innerText = '🔖 نشانه‌';
+      }, 2500);
+    });
+
+    gotoBookmarkBtn.addEventListener('click', () => {
+      const savedIndex = localStorage.getItem(getStorageKey());
+      if (savedIndex === null) return;
+
+      const targetCouplet = allCouplets[parseInt(savedIndex, 10)];
+      if (!targetCouplet) return;
+
+      const wrapperRect = scrollArea.getBoundingClientRect();
+      const lineRect = targetCouplet.getBoundingClientRect();
+      const relativeTop = lineRect.top - wrapperRect.top;
+      const scrollOffset = relativeTop - (wrapperRect.height / 2) + (lineRect.height / 2);
+
+      scrollArea.scrollTop = scrollArea.scrollTop + scrollOffset;
+
+      targetCouplet.classList.add('highlight');
+      setTimeout(() => {
+        targetCouplet.classList.remove('highlight');
+      }, 2000);
+    });
+
+    window.addEventListener('load', () => {
+      fetchAndPopulate('romantic.json');
+    });
+
+    // مودال
+    const modal = document.getElementById('copyrightModal');
+    const openBtn = document.getElementById('openModalBtn');
+    const closeBtn = document.getElementById('closeModalBtn');
+
+    openBtn.addEventListener('click', () => { modal.classList.add('active'); });
+    closeBtn.addEventListener('click', () => { modal.classList.remove('active'); });
+    modal.addEventListener('click', (e) => { if (e.target === modal) { modal.classList.remove('active'); } });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modal.classList.contains('active')) { modal.classList.remove('active'); } });
+  </script>
+</body>
+  </html>
