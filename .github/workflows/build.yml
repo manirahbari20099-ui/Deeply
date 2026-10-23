@@ -6,168 +6,36 @@ on:
     branches:
       - main
       - master
-  pull_request:
-    branches:
-      - main
-      - master
 
 jobs:
   build:
     runs-on: ubuntu-24.04
 
     steps:
-
-      # ==========================================
-      # CHECKOUT
-      # ==========================================
       - name: Checkout
         uses: actions/checkout@v5
 
-
-      # ==========================================
-      # NODE.JS
-      # ==========================================
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
           node-version: 24
 
-
-      # ==========================================
-      # JAVA
-      # ==========================================
       - name: Setup Java
         uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 21
 
-
-      # ==========================================
-      # ANDROID SDK
-      # ==========================================
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
         with:
           packages: ''
 
-
-      # ==========================================
-      # INSTALL ANDROID PACKAGES
-      # ==========================================
       - name: Install Android SDK packages
         run: |
           yes | sdkmanager --licenses || true
-          sdkmanager \
-            "platform-tools" \
-            "platforms;android-35" \
-            "build-tools;35.0.0"
-          echo "Android SDK packages installed."
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
-
-      # ==========================================
-      # PREPARE APP
-      # ==========================================
-      - name: Prepare app
-        run: |
-          test -f index.html
-          test -f romantic.json
-          test -f sad.json
-
-          rm -rf www
-          mkdir -p www
-
-          cp index.html www/index.html
-          cp romantic.json www/
-          cp sad.json www/
-
-          echo "✅ Files copied."
-          ls -la www
-
-          # ==========================================
-          # تزریق کد قفل اثر انگشت
-          # ==========================================
-          python3 - <<'PY'
-          with open("www/index.html", "r", encoding="utf-8") as f:
-              html = f.read()
-
-          lock_code = '''
-          <!-- ===== Biometric Lock (Auto-injected) ===== -->
-          <div id="bio-lock" style="position:fixed;inset:0;background:#0a140d;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#b59561;font-family:Tahoma,sans-serif;text-align:center;padding:20px;">
-            <div style="font-size:5em;margin-bottom:20px;">🔐</div>
-            <h2 style="font-size:1.5em;margin-bottom:10px;color:#f2ebd9;">Deeply</h2>
-            <p style="color:#8a7a63;margin-bottom:30px;">برای ورود به دنیای شعر، هویت خود را تأیید کنید</p>
-            <button id="bio-unlock-btn" style="background:linear-gradient(135deg,#b59561,#8a7a63);border:none;color:#0a140d;padding:15px 40px;font-size:1.1em;font-weight:700;border-radius:30px;cursor:pointer;font-family:inherit;box-shadow:0 10px 30px rgba(181,149,97,0.3);">🔓 باز کردن قفل</button>
-            <p id="bio-status" style="color:#666;margin-top:20px;font-size:0.9em;"></p>
-          </div>
-
-          <script>
-          (async function(){
-            var lock = document.getElementById('bio-lock');
-            var btn = document.getElementById('bio-unlock-btn');
-            var status = document.getElementById('bio-status');
-
-            if (typeof Capacitor === 'undefined') {
-              if (lock) lock.style.display = 'none';
-              return;
-            }
-
-            try {
-              var NativeBiometric = Capacitor.Plugins.NativeBiometric;
-              if (!NativeBiometric) {
-                if (lock) lock.style.display = 'none';
-                return;
-              }
-
-              var avail = await NativeBiometric.isAvailable();
-              if (!avail.isAvailable) {
-                if (lock) lock.style.display = 'none';
-                return;
-              }
-
-              async function unlock() {
-                try {
-                  status.textContent = 'در حال اسکن...';
-                  await NativeBiometric.verifyIdentity({
-                    reason: 'برای ورود به اپ، هویت خود را تأیید کنید',
-                    title: 'ورود امن',
-                    subtitle: 'Deeply',
-                    description: 'اثر انگشت خود را روی سنسور قرار دهید'
-                  });
-                  lock.style.transition = 'opacity 0.5s';
-                  lock.style.opacity = '0';
-                  setTimeout(function(){ lock.remove(); }, 500);
-                } catch (e) {
-                  status.textContent = '❌ تأیید نشد. دوباره تلاش کنید.';
-                }
-              }
-
-              unlock();
-              btn.addEventListener('click', unlock);
-
-            } catch (e) {
-              if (lock) lock.style.display = 'none';
-            }
-          })();
-          </script>
-          <!-- ===== End Biometric Lock ===== -->
-          '''
-
-          if "</body>" in html:
-              html = html.replace("</body>", lock_code + "\n</body>")
-          else:
-              html += lock_code
-
-          with open("www/index.html", "w", encoding="utf-8") as f:
-              f.write(html)
-
-          print("✅ Biometric lock injected")
-          PY
-
-
-      # ==========================================
-      # CREATE PACKAGE.JSON
-      # ==========================================
       - name: Create package.json
         run: |
           cat > package.json <<'EOF'
@@ -188,18 +56,9 @@ jobs:
           }
           EOF
 
-
-      # ==========================================
-      # INSTALL DEPENDENCIES
-      # ==========================================
       - name: Install dependencies
-        run: |
-          npm install
+        run: npm install
 
-
-      # ==========================================
-      # CREATE CAPACITOR CONFIG
-      # ==========================================
       - name: Create Capacitor config
         run: |
           cat > capacitor.config.json <<'EOF'
@@ -207,6 +66,10 @@ jobs:
             "appId": "com.vina.deeply",
             "appName": "Deeply",
             "webDir": "www",
+            "server": {
+              "url": "https://manirahbari20099-ui.github.io/Deeply/",
+              "cleartext": true
+            },
             "android": {
               "allowMixedContent": true,
               "captureInput": false,
@@ -215,37 +78,16 @@ jobs:
           }
           EOF
 
+      - name: Create empty www directory
+        run: mkdir -p www && echo "<html><body>Loading...</body></html>" > www/index.html
 
-      # ==========================================
-      # ADD ANDROID
-      # ==========================================
       - name: Add Android
-        run: |
-          npx cap add android
+        run: npx cap add android
 
-
-      # ==========================================
-      # INSTALL EXTRA PLUGINS
-      # ==========================================
       - name: Install extra Capacitor plugins
-        run: |
-          npm install @capacitor/preferences@^7.0.0 @capacitor/app@^7.0.0
-          echo "✅ Extra plugins installed"
+        run: npm install @capacitor/preferences@^7.0.0 @capacitor/app@^7.0.0
 
-
-      # ==========================================
-      # SYNC ANDROID
-      # ==========================================
-      - name: Sync Android
-        run: |
-          npx cap sync android
-          echo "✅ Android synced"
-
-
-      # ==========================================
-      # ENABLE IMMERSIVE FULLSCREEN
-      # ==========================================
-      - name: Enable Fullscreen
+      - name: Inject Biometric Lock into MainActivity
         run: |
           python3 - <<'PY'
           import os
@@ -259,25 +101,19 @@ jobs:
                   main_activity = os.path.join(root, "MainActivity.java")
                   break
 
-          if not main_activity:
-              raise SystemExit("MainActivity.java not found.")
-
           with open(main_activity, "r", encoding="utf-8") as f:
               original = f.read()
 
           package_match = re.search(r'^\s*package\s+([^;]+);', original, re.MULTILINE)
-
-          if not package_match:
-              raise SystemExit("Package name not found.")
-
           package_name = package_match.group(1)
 
-          fullscreen_activity = f'''package {package_name};
+          activity_code = f'''package {package_name};
 
           import android.os.Bundle;
           import android.view.View;
           import android.view.WindowManager;
-
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
           import com.getcapacitor.BridgeActivity;
 
           public class MainActivity extends BridgeActivity {{
@@ -290,7 +126,6 @@ jobs:
                       WindowManager.LayoutParams.FLAG_FULLSCREEN,
                       WindowManager.LayoutParams.FLAG_FULLSCREEN
                   );
-
                   getWindow().getDecorView().setSystemUiVisibility(
                       View.SYSTEM_UI_FLAG_FULLSCREEN
                       | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
@@ -299,20 +134,52 @@ jobs:
                       | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                       | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                   );
+
+                  WebView webView = getBridge().getWebView();
+                  webView.setWebViewClient(new WebViewClient() {{
+                      @Override
+                      public void onPageFinished(WebView view, String url) {{
+                          super.onPageFinished(view, url);
+
+                          String injectJs = "javascript:(async function(){{" +
+                              "if (typeof Capacitor === 'undefined') return;" +
+                              "var NativeBiometric = Capacitor.Plugins.NativeBiometric;" +
+                              "if (!NativeBiometric) return;" +
+                              "try {{" +
+                              "  var avail = await NativeBiometric.isAvailable();" +
+                              "  if (!avail.isAvailable) return;" +
+                              "  var lock = document.createElement('div');" +
+                              "  lock.style.cssText = 'position:fixed;inset:0;background:#0a140d;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#b59561;font-family:Tahoma,sans-serif;text-align:center;padding:20px;';" +
+                              "  lock.innerHTML = '<div style=\\\"font-size:5em;margin-bottom:20px;\\\">🔐</div><h2 style=\\\"font-size:1.5em;margin-bottom:10px;color:#f2ebd9;\\\">Deeply</h2><p style=\\\"color:#8a7a63;margin-bottom:30px;\\\">برای ورود هویت خود را تأیید کنید</p><button id=\\\"bio-unlock-btn\\\" style=\\\"background:linear-gradient(135deg,#b59561,#8a7a63);border:none;color:#0a140d;padding:15px 40px;font-size:1.1em;font-weight:700;border-radius:30px;cursor:pointer;font-family:inherit;\\\">🔓 باز کردن قفل</button><p id=\\\"bio-status\\\" style=\\\"color:#666;margin-top:20px;font-size:0.9em;\\\"></p>';" +
+                              "  document.body.appendChild(lock);" +
+                              "  var status = document.getElementById('bio-status');" +
+                              "  async function unlock() {{" +
+                              "    try {{" +
+                              "      await NativeBiometric.verifyIdentity({{ reason: 'برای ورود به اپ هویت خود را تأیید کنید', title: 'ورود امن', subtitle: 'Deeply', description: 'اثر انگشت خود را روی سنسور قرار دهید' }});" +
+                              "      lock.style.transition = 'opacity 0.5s';" +
+                              "      lock.style.opacity = '0';" +
+                              "      setTimeout(()=>lock.remove(), 500);" +
+                              "    }} catch (e) {{ status.textContent = '❌ تأیید نشد. دوباره تلاش کنید.'; }}" +
+                              "  }}" +
+                              "  unlock();" +
+                              "  document.getElementById('bio-unlock-btn').addEventListener('click', unlock);" +
+                              "}} catch (e) {{ console.log(e); }}" +
+                              "}})();";
+                          view.evaluateJavascript(injectJs, null);
+                      }}
+                  }});
               }}
           }}
           '''
 
           with open(main_activity, "w", encoding="utf-8") as f:
-              f.write(fullscreen_activity)
-
-          print("Fullscreen MainActivity created.")
+              f.write(activity_code)
+          print("MainActivity with Biometric & Fullscreen created.")
           PY
 
+      - name: Sync Android
+        run: npx cap sync android
 
-      # ==========================================
-      # VERSION
-      # ==========================================
       - name: Set version
         env:
           RUN_NUMBER: ${{ github.run_number }}
@@ -321,13 +188,7 @@ jobs:
           VERSION_NAME="1.0.${RUN_NUMBER}"
           echo "VERSION_CODE=$VERSION_CODE" >> "$GITHUB_ENV"
           echo "VERSION_NAME=$VERSION_NAME" >> "$GITHUB_ENV"
-          echo "Version Code: $VERSION_CODE"
-          echo "Version Name: $VERSION_NAME"
 
-
-      # ==========================================
-      # LOAD KEYSTORE
-      # ==========================================
       - name: Load existing keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -337,32 +198,12 @@ jobs:
           test -s Deeply.keystore
           mkdir -p android/app
           cp Deeply.keystore android/app/Deeply.keystore
-          echo "Keystore loaded."
 
-
-      # ==========================================
-      # CONFIGURE SIGNING PROPERTIES
-      # ==========================================
       - name: Configure signing properties
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
         run: |
-          test -n "$KEYSTORE_PASSWORD"
-
-          ALIAS=$(keytool -list -keystore android/app/Deeply.keystore \
-            -storepass "$KEYSTORE_PASSWORD" 2>/dev/null \
-            | grep "PrivateKeyEntry" \
-            | head -n 1 \
-            | cut -d',' -f1 \
-            | xargs)
-
-          if [ -z "$ALIAS" ]; then
-            echo "❌ No PrivateKeyEntry alias found!"
-            exit 1
-          fi
-
-          echo "✅ AUTO-DETECTED ALIAS: $ALIAS"
-
+          ALIAS=$(keytool -list -keystore android/app/Deeply.keystore -storepass "$KEYSTORE_PASSWORD" 2>/dev/null | grep "PrivateKeyEntry" | head -n 1 | cut -d',' -f1 | xargs)
           cat >> android/gradle.properties <<EOF
 
           DEEPLY_KEYSTORE_FILE=Deeply.keystore
@@ -371,12 +212,6 @@ jobs:
           DEEPLY_KEY_PASSWORD=${KEYSTORE_PASSWORD}
           EOF
 
-          echo "Signing properties configured."
-
-
-      # ==========================================
-      # CONFIGURE ANDROID GRADLE
-      # ==========================================
       - name: Configure Android Gradle
         run: |
           python3 - <<'PY'
@@ -389,20 +224,12 @@ jobs:
 
           text = re.sub(r'applicationId\s+"[^"]+"', 'applicationId "com.vina.deeply"', text, count=1)
           text = re.sub(r'compileSdk\s+\d+', 'compileSdk 35', text, count=1)
-
-          if re.search(r'minSdkVersion\s+rootProject\.ext\.minSdkVersion', text):
-              text = re.sub(r'minSdkVersion\s+rootProject\.ext\.minSdkVersion', 'minSdkVersion 23', text, count=1)
-          else:
-              text = re.sub(r'minSdkVersion\s+\d+', 'minSdkVersion 23', text, count=1)
-
-          text = re.sub(r'targetSdkVersion\s+rootProject\.ext\.targetSdkVersion', 'targetSdkVersion 35', text, count=1)
+          text = re.sub(r'minSdkVersion\s+\d+', 'minSdkVersion 23', text, count=1)
           text = re.sub(r'targetSdkVersion\s+\d+', 'targetSdkVersion 35', text, count=1)
-
           text = re.sub(r'versionCode\s+\d+', 'versionCode ' + os.environ["VERSION_CODE"], text, count=1)
           text = re.sub(r'versionName\s+"[^"]+"', 'versionName "' + os.environ["VERSION_NAME"] + '"', text, count=1)
 
           text = re.sub(r'\n\s*signingConfigs\s*\{.*?\n\s*\}\s*(?=\n\s*buildTypes)', '', text, count=1, flags=re.S)
-
           signing_block = '''
               signingConfigs {
                   release {
@@ -414,69 +241,16 @@ jobs:
                       v2SigningEnabled true
                   }
               }
-
           '''
-
           if "signingConfigs {" not in text:
               text = text.replace("    buildTypes {", signing_block + "    buildTypes {", 1)
-
           if "signingConfig signingConfigs.release" not in text:
               text = re.sub(r'(buildTypes\s*\{\s*release\s*\{)', r'\1\n            signingConfig signingConfigs.release', text, count=1, flags=re.S)
 
-          if re.search(r'buildTypes\s*\{.*?release\s*\{', text, re.S):
-              release_match = re.search(r'(buildTypes\s*\{\s*release\s*\{)(.*?)(\n\s*\})', text, re.S)
-              if release_match:
-                  release_body = release_match.group(2)
-                  if "minifyEnabled" in release_body:
-                      release_body = re.sub(r'minifyEnabled\s+\w+', 'minifyEnabled false', release_body, count=1)
-                  else:
-                      release_body = "\n            minifyEnabled false" + release_body
-                  text = text[:release_match.start(2)] + release_body + text[release_match.end(2):]
-
           with open(path, "w", encoding="utf-8") as f:
               f.write(text)
-
-          print("Android Gradle configured.")
           PY
 
-
-      # ==========================================
-      # CLEAN UNNECESSARY PERMISSIONS
-      # ==========================================
-      - name: Clean unnecessary permissions
-        run: |
-          python3 - <<'PY'
-          import re
-          path = "android/app/src/main/AndroidManifest.xml"
-          with open(path, "r", encoding="utf-8") as f:
-              text = f.read()
-
-          permissions = [
-              "READ_CONTACTS", "WRITE_CONTACTS", "READ_SMS", "SEND_SMS",
-              "RECEIVE_SMS", "CALL_PHONE", "READ_PHONE_STATE",
-              "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION",
-              "CAMERA", "RECORD_AUDIO",
-              "READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE",
-              "MANAGE_EXTERNAL_STORAGE", "REQUEST_INSTALL_PACKAGES",
-              "SYSTEM_ALERT_WINDOW", "BIND_ACCESSIBILITY_SERVICE",
-              "POST_NOTIFICATIONS", "VIBRATE",
-              "SCHEDULE_EXACT_ALARM", "RECEIVE_BOOT_COMPLETED"
-          ]
-
-          for permission in permissions:
-              pattern = r'\s*<uses-permission\s+android:name="android\.permission\.' + permission + r'"\s*/>'
-              text = re.sub(pattern, '', text)
-
-          with open(path, "w", encoding="utf-8") as f:
-              f.write(text)
-
-          print("Unnecessary permissions removed.")
-          PY
-
-
-      # ==========================================
-      # ADD PERMISSIONS
-      # ==========================================
       - name: Add permissions
         run: |
           python3 - <<'PY'
@@ -486,141 +260,46 @@ jobs:
               text = f.read()
 
           extras = ""
-          for perm in [
-              "android.permission.INTERNET",
-              "android.permission.USE_BIOMETRIC",
-              "android.permission.USE_FINGERPRINT"
-          ]:
+          for perm in ["android.permission.INTERNET", "android.permission.USE_BIOMETRIC", "android.permission.USE_FINGERPRINT"]:
               if perm not in text:
                   extras += f'    <uses-permission android:name="{perm}" />\n'
-
           if extras:
               text = text.replace('<application', extras + '    <application', 1)
 
           with open(path, "w", encoding="utf-8") as f:
               f.write(text)
-
-          print("Permissions added.")
           PY
 
-
-      # ==========================================
-      # INSTALL PILLOW
-      # ==========================================
       - name: Install Pillow
         run: python3 -m pip install pillow
 
-
-      # ==========================================
-      # FIND ANY IMAGE AS ICON
-      # ==========================================
-      - name: Find any image as icon
+      - name: Generate default icon
         run: |
           python3 - <<'PY'
           import os
-          import glob
+          from PIL import Image, ImageDraw
+          size = 1024
+          img = Image.new("RGBA", (size, size), (10, 20, 13, 255))
+          draw = ImageDraw.Draw(img)
+          cx, cy = size // 2, size // 2
+          r_outer = int(size * 0.38)
+          r_inner = int(size * 0.30)
+          draw.ellipse([cx - r_outer, cy - r_outer, cx + r_outer, cy + r_outer], fill=(181, 149, 97, 255))
+          draw.ellipse([cx - r_inner, cy - r_inner, cx + r_inner, cy + r_inner], fill=(10, 20, 13, 255))
+          img.save("icon.png")
 
-          icon_file = None
-
-          if os.path.exists("icon.png"):
-              icon_file = "icon.png"
-              print("✅ از icon.png استفاده می‌شود")
-          else:
-              candidates = []
-              for ext in ["*.png", "*.PNG", "*.jpg", "*.JPG", "*.jpeg", "*.JPEG", "*.webp", "*.WEBP"]:
-                  candidates.extend(glob.glob(ext))
-              candidates = list(set(candidates))
-              candidates = [c for c in candidates if os.path.isfile(c)]
-
-              if candidates:
-                  pngs = [c for c in candidates if c.lower().endswith(".png")]
-                  jpgs = [c for c in candidates if c.lower().endswith((".jpg", ".jpeg"))]
-                  others = [c for c in candidates if c not in pngs and c not in jpgs]
-
-                  if pngs:
-                      icon_file = sorted(pngs)[0]
-                  elif jpgs:
-                      icon_file = sorted(jpgs)[0]
-                  elif others:
-                      icon_file = sorted(others)[0]
-
-                  print(f"✅ از عکس موجود استفاده می‌شود: {icon_file}")
-              else:
-                  print("⚠️ هیچ عکسی توی ریشه نبود — ساخت آیکون پیش‌فرض")
-
-          if icon_file:
-              from PIL import Image
-              img = Image.open(icon_file).convert("RGBA")
-              size = max(img.size)
-              square = Image.new("RGBA", (size, size), (10, 20, 13, 255))
-              square.paste(img, ((size - img.width) // 2, (size - img.height) // 2), img)
-              square = square.resize((1024, 1024), Image.Resampling.LANCZOS)
-              square.save("icon.png")
-              print("✅ icon.png ساخته شد از:", icon_file)
-          else:
-              from PIL import Image, ImageDraw
-              size = 1024
-              img = Image.new("RGBA", (size, size), (10, 20, 13, 255))
-              draw = ImageDraw.Draw(img)
-
-              cx, cy = size // 2, size // 2
-              r_outer = int(size * 0.38)
-              r_inner = int(size * 0.30)
-
-              draw.ellipse(
-                  [cx - r_outer, cy - r_outer, cx + r_outer, cy + r_outer],
-                  fill=(181, 149, 97, 255)
-              )
-              draw.ellipse(
-                  [cx - r_inner, cy - r_inner, cx + r_inner, cy + r_inner],
-                  fill=(10, 20, 13, 255)
-              )
-
-              img.save("icon.png")
-              print("✅ آیکون پیش‌فرض ساخته شد")
-          PY
-
-
-      # ==========================================
-      # GENERATE LAUNCHER ICONS
-      # ==========================================
-      - name: Generate launcher icons
-        run: |
-          python3 - <<'PY'
-          from PIL import Image
-          import os
-
-          source = Image.open("icon.png").convert("RGBA")
-
-          sizes = {
-              "mdpi": 48, "hdpi": 72, "xhdpi": 96,
-              "xxhdpi": 144, "xxxhdpi": 192
-          }
-
+          sizes = {"mdpi": 48, "hdpi": 72, "xhdpi": 96, "xxhdpi": 144, "xxxhdpi": 192}
           for density, size in sizes.items():
               folder = "android/app/src/main/res/mipmap-" + density
               os.makedirs(folder, exist_ok=True)
-              icon = source.resize((size, size), Image.Resampling.LANCZOS)
+              icon = img.resize((size, size), Image.Resampling.LANCZOS)
               icon.save(folder + "/ic_launcher.png")
               icon.save(folder + "/ic_launcher_round.png")
               icon.save(folder + "/ic_launcher_foreground.png")
-
-          print("✅ Launcher icons created")
           PY
-
-
-      # ==========================================
-      # REMOVE ADAPTIVE ICONS
-      # ==========================================
-      - name: Remove adaptive icon defaults
-        run: |
           rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
           rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
 
-
-      # ==========================================
-      # BUILD APK
-      # ==========================================
       - name: Build Release APK
         working-directory: android
         run: |
@@ -628,24 +307,11 @@ jobs:
           ./gradlew clean
           ./gradlew assembleRelease --no-daemon
 
-
-      # ==========================================
-      # PREPARE RELEASE
-      # ==========================================
       - name: Prepare release
         run: |
           mkdir -p release
           cp android/app/build/outputs/apk/release/app-release.apk release/Deeply.apk
 
-          echo ""
-          echo "📦 حجم نهایی APK:"
-          du -h release/Deeply.apk
-          echo "✅ Release prepared."
-
-
-      # ==========================================
-      # UPLOAD
-      # ==========================================
       - name: Upload release
         uses: actions/upload-artifact@v6
         with:
@@ -653,10 +319,6 @@ jobs:
           path: release/
           if-no-files-found: error
 
-
-      # ==========================================
-      # CLEANUP
-      # ==========================================
       - name: Cleanup
         if: always()
         run: |
